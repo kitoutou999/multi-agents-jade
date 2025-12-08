@@ -1,0 +1,4 @@
+javac -cp "jade.jar:." *.java 
+
+java -cp ".:./jade.jar" jade.Boot -gui -agents atelier:Atelier
+
