@@ -14,7 +14,7 @@ public class Robot extends Agent {
 		System.out.println("Robot " + this.getAID().getName() + " is ready.");
 		this.addBehaviour(new myBehaviour(this, 10000)); //1000 = 1 sec
 
-        for 
+    
 
 
 	}
