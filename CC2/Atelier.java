@@ -12,6 +12,10 @@ public class Atelier extends Agent {
 	//1000 = 1 sec
 	private int lambda1 = 1000; //λ1
 	private int lambda2 = 5000; //λ2
+	
+	private int idProduit = 1;
+	
+	int
 
 	// Put agent initializations here
 	protected void setup() {
@@ -22,10 +26,14 @@ public class Atelier extends Agent {
 		
 			@Override
 			protected void onTick(){
-				System.out.println("Atelier tick temps = " + getPeriod() + " ms");
+				
+				//Créer un nouveau Produit à envoyer
+				Produit newProduit = new Produit("P" + idProduit);
+				idProduit++;
+				
+				System.out.println("Atelier tick temps = " + getPeriod() + " ms viens de créer le produit " + newProduit.getId());
 				
 				long temp = getRandomTemps(); //Créer une nouvelle durée aléatoire
-				
 				reset(temp); //maj le temps avec le nouveau temps
 				
 				
