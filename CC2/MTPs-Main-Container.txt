@@ -1,1 +1,1 @@
-http://C304L-415C14.campus.unicaen.fr:7778/acc
+http://C304L-415C16.campus.unicaen.fr:7778/acc
