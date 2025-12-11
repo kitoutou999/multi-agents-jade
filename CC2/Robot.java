@@ -1,8 +1,11 @@
+import jade.core.*;
+import jade.domain.*;
+import jade.lang.acl.ACLMessage;
 import jade.core.Agent;
-import jade.domain.DFService;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
-import jade.domain.FIPAException;
+import jade.core.AID;
+import jade.core.behaviours.*;
+import jade.domain.*;
+import jade.domain.FIPAAgentManagement.*;
 import java.util.HashMap;
 import java.util.Properties;
 import java.io.FileInputStream;
@@ -29,6 +32,24 @@ public class Robot extends Agent {
         System.out.println("Robot " + getLocalName() + " compétences : " + this.competences);
 
         registerDF();
+        
+
+        this.addBehaviour(new TickerBehaviour(this, 1000) { 
+		
+			@Override
+			protected void onTick(){
+				
+				System.out.println("Listeing");
+                ACLMessage msg = myAgent.receive();
+                if(msg!=null){
+                    System.out.println("Recus");
+                }
+				
+				
+			}
+		});
+        
+        System.out.println(findRobotsWithCompetence(1));
     }
 
     protected void takeDown() {
@@ -96,23 +117,53 @@ public class Robot extends Agent {
         return null;
     }
 
+    private ACLMessage ask(AID AIDTarget, String question){
+        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+        msg.addReceiver(AIDTarget);
+        msg.setContent(question);
+        send(msg);
 
-    private ArrayList<String> findRobotsWithCompetence(Integer competence) {
 
-            ArrayList<String> robotsWithCompetence = new ArrayList<>();
+        while(true){
+            ACLMessage msgr = this.receive();
+            if (msgr!=null){
+                return msgr;
+            }
+        }
+    }
+
+
+
+
+    private ArrayList<AID> findRobotsWithCompetence(Integer competence) {
+
+            ArrayList<AID> robotsWithCompetence = new ArrayList<>();
 
           
             DFAgentDescription template = new DFAgentDescription();
             ServiceDescription sd = new ServiceDescription();
             sd.setType("robots");
             template.addServices(sd);
+            try{    
+                DFAgentDescription[] result = DFService.search(this, template);
+                for (DFAgentDescription dfd : result) {
+                    AID robotName = dfd.getName();
 
-            DFAgentDescription[] result = DFService.search(this, template);
-            for (DFAgentDescription dfd : result) {
-                String robotName = dfd.getName().getLocalName();
-               
-                robotsWithCompetence.add(robotName);
+                    ACLMessage message = ask(robotName,"Comp");
+
+                    //System.out.println("message = "+message);
+
+
+
+                
+                    robotsWithCompetence.add(robotName);
+                }
+                
+            }catch(FIPAException ex){
+                System.out.println(ex);
             }
+            
+            
            
 
             return robotsWithCompetence;
@@ -122,7 +173,11 @@ public class Robot extends Agent {
     private ArrayList<String> sortRobotsBySpeed(ArrayList<String> robots){
         //TODO 
         return robots;
-    }    
+    }   
+
+    
+
+
 }
 
 
