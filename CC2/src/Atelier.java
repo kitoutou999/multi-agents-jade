@@ -26,7 +26,7 @@ public class Atelier extends Agent {
         // Chargement de la configuration
         try {
             Properties prop = new Properties();
-            FileInputStream input = new FileInputStream("config.properties");
+            FileInputStream input = new FileInputStream("config/config.properties");
             prop.load(input);
             
             this.lambda1 = Integer.parseInt(prop.getProperty("lambda1", "1000"));

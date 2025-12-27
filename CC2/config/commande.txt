@@ -1,0 +1,5 @@
+# Compilation (depuis la racine du projet)
+javac -d bin -cp "lib/jade.jar:src" src/*.java
+
+# Execution (depuis la racine du projet)
+java -cp "bin:lib/jade.jar" jade.Boot -gui -agents atelier:Atelier

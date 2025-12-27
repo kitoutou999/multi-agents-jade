@@ -64,7 +64,7 @@ public class Robot extends Agent {
     private void loadConfig() {
         Properties prop = new Properties();
         try {
-            FileInputStream input = new FileInputStream("config.properties");
+            FileInputStream input = new FileInputStream("config/config.properties");
             prop.load(input);
             this.nbCompetencesActives = Integer.parseInt(prop.getProperty("nbCompetencesActives", "2"));
             this.nbCompetencesTotal = Integer.parseInt(prop.getProperty("nbCompetencesTotal", "5"));
