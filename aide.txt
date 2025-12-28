@@ -1,4 +1,0 @@
-java -cp ".:./jade.jar" jade.Boot -gui -agents bob:myAgent
-
-java -cp ".:./jade.jar" jade.Boot -gui -agents fabio:myAgent
-
