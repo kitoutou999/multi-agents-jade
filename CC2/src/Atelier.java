@@ -1,108 +1,126 @@
-import jade.core.Agent;
 import jade.core.AID;
 import jade.core.behaviours.*;
-import jade.domain.*;
-import jade.domain.FIPAAgentManagement.*;
+import jade.domain.DFService;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
+
+import java.util.ArrayList;
 import java.util.Random;
-import java.util.Properties;
-import java.io.FileInputStream;
-import java.io.IOException;
 
-public class Atelier extends Agent {
-	
-	private Random random = new Random();
-	
-	private int lambda1;
-	private int lambda2;
-	private int nbCompetencesMaxProduit;
-	private int nbCompetencesTotal;
-    
-	
-	private int idProduit = 1;
-	
+public class Atelier extends BaseAgent {
 
-	// Put agent initializations here
-	protected void setup() {
-        // Chargement de la configuration
-        try {
-            Properties prop = new Properties();
-            FileInputStream input = new FileInputStream("config/config.properties");
-            prop.load(input);
-            
-            this.lambda1 = Integer.parseInt(prop.getProperty("lambda1", "1000"));
-            this.lambda2 = Integer.parseInt(prop.getProperty("lambda2", "5000"));
-            
-            this.nbCompetencesTotal = Integer.parseInt(prop.getProperty("nbCompetencesTotal", "10"));
-            this.nbCompetencesMaxProduit = Integer.parseInt(prop.getProperty("nbCompetencesMaxProduit", "3"));
-            
-            input.close();
-            registerDF();
-            System.out.println("Atelier config chargée: L1=" + lambda1 + " L2=" + lambda2);
-            
-        } catch (IOException ex) {
-            System.out.println("Atelier: config.properties non trouvé, utilisation des valeurs par défaut.");
-        }
+    private Random random = new Random();
 
-		System.out.println("Atelier Créé");
-		long temps = getRandomTemps();
-		this.addBehaviour(new TickerBehaviour(this, temps) { 
-		
-			@Override
-			protected void onTick(){
-				
-				//Créer un nouveau Produit à envoyer
-				Produit newProduit = new Produit("P" + idProduit);
-				int nbCompetencesProduit = random.nextInt(nbCompetencesMaxProduit) + 1;
-				System.out.println("nbCompetencesProduit " + nbCompetencesProduit);
-				
-				for(int i = 0;i < nbCompetencesProduit;i++){
-					int competance = random.nextInt(nbCompetencesTotal) + 1;
-					newProduit.ajoutCompetence(competance);
-				}
-				
-				idProduit++;
-				System.out.println("Atelier tick temps = " + getPeriod() + " ms viens de créer le produit " + newProduit.getId());
-				
-				//Donne le produit créer à un agent aléatoirement choisi
-				
-				
-				
-				
-				
-				long temps = getRandomTemps(); //Créer une nouvelle durée aléatoire
-				reset(temps); //maj le temps avec le nouveau temps
-				
-				
-			}
-		});
-	}
+    private int idProduit = 1;
+
+    private String nameColor = "\u001B[33mAtelier\u001B[0m ";
+
+    private String GREEN_BACKGROUND = "\u001B[42m";
+    private String RED_BACKGROUND = "\u001B[41m";
+    private String RESET = "\u001B[0m";
+
+    private ArrayList<Produit> produitsEnCours = new ArrayList<>();
+    private ArrayList<Produit> produitsFinis = new ArrayList<>();
+    private ArrayList<Produit> produitsEchec = new ArrayList<>();
 
 
-	// Put agent clean-up operations here
-	protected void takeDown() {
-		// Printout a dismissal message
-		System.out.println("Atelier fermée");
+    protected void setup() {
+       
+        loadConfig(); 
+        registerDF("atelier");
 
-	}
-	
-	//Donne un temps entre lambda2 et lambda1
-	private long getRandomTemps(){
-		return random.nextInt((lambda2 - lambda1) + 1) + lambda1;
-	}
-	
-	//S'enregistre dans les pages jaunes
-	private void registerDF() {
-        DFAgentDescription dfd = new DFAgentDescription();
-        dfd.setName(getAID());
+        System.out.println(nameColor + getLocalName() + " prêt. (L1=" + lambda1 + ", L2=" + lambda2 + ")");
+
+        addBehaviour(new FinishProduct());
+
+        // Genère les produit aléatoirement
+        long temps = getRandomTemps();
+        addBehaviour(new TickerBehaviour(this, temps) {
+            @Override
+            protected void onTick() {
+                Produit newProduit = new Produit("P" + idProduit++);
+                int nbCompetences = random.nextInt(nbCompetencesMaxProduit) + 1;
+                
+                ArrayList<Integer> pool = new ArrayList<>();
+                for(int i=1; i<=nbCompetencesTotal; i++) pool.add(i);
+                
+                for(int i=0; i<nbCompetences; i++) {
+                    int index = random.nextInt(pool.size());
+                    newProduit.ajoutCompetence(pool.remove(index));
+                }
+
+                System.out.println(nameColor+": NOUVEAU PRODUIT : " + newProduit);
+
+                randomGive(newProduit);
+                produitsEnCours.add(newProduit);
+
+                long nextTime = getRandomTemps();
+                reset(nextTime);
+            }
+        });
+    }
+
+    private void randomGive(Produit p) {
+        // Trouver tous les robots
+        DFAgentDescription template = new DFAgentDescription();
         ServiceDescription sd = new ServiceDescription();
-        sd.setType("atelier");
-        sd.setName(getLocalName());
-        dfd.addServices(sd);
+        sd.setType("robots");
+        template.addServices(sd);
         try {
-            DFService.register(this, dfd);
-        } catch (FIPAException fe) {
-            fe.printStackTrace();
+            DFAgentDescription[] result = DFService.search(this, template);
+            
+            int index = random.nextInt(result.length);
+            AID Robot = result[index].getName();
+            
+            // Envoyer la REQUEST
+            ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+            msg.addReceiver(Robot);
+            msg.setContentObject(p);
+            msg.setConversationId("attribution-produit-" + p.getId());
+            send(msg);
+            
+            System.out.println(nameColor+": Produit " + p.getId() + " envoyé à " + Robot.getLocalName());
+            
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
+    private long getRandomTemps() {
+        return random.nextInt((lambda2 - lambda1) + 1) + lambda1;
+    }
+
+    private class FinishProduct extends CyclicBehaviour {
+        @Override
+        public void action() {
+            MessageTemplate mt = MessageTemplate.or(
+                MessageTemplate.MatchPerformative(ACLMessage.INFORM),
+                MessageTemplate.MatchPerformative(ACLMessage.FAILURE)
+            );
+
+            ACLMessage msg = myAgent.receive(mt);
+            if (msg != null) {
+                try {
+                    if (msg.getPerformative() == ACLMessage.INFORM) {
+                        Produit p = (Produit) msg.getContentObject();
+                        System.out.println(GREEN_BACKGROUND+nameColor+GREEN_BACKGROUND+": PRODUIT FINI : " + p+RESET);
+                        produitsFinis.add(p);
+                        produitsEnCours.remove(p);
+                    } else if (msg.getPerformative() == ACLMessage.FAILURE) {
+                        Produit p = (Produit) msg.getContentObject();
+                        System.out.println(RED_BACKGROUND+nameColor+RED_BACKGROUND+": ECHEC DE FABRICATION : " + p+RESET);
+                        produitsEchec.add(p);
+                        produitsEnCours.remove(p);
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                block();
+            }
+        }
+    }
 }
