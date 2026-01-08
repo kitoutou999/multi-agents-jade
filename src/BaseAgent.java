@@ -3,21 +3,53 @@ import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
+import jade.lang.acl.ACLMessage;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+/**
+ * Classe abstraite servant de base à tous les agents du système (Atelier et Robots).
+ * <p>
+ * Elle gère :
+ * <ul>
+ * <li>Le chargement de la configuration depuis un fichier properties.</li>
+ * <li>L'enregistrement auprès du Directory Facilitator (DF).</li>
+ * <li>Le comptage global des messages envoyés (statistiques).</li>
+ * </ul>
+ * </p>
+ *
+ * @author Ton Prenom NOM
+ */
 public class BaseAgent extends Agent {
 
     protected Properties config = new Properties();
     
-    protected int lambda1;
-    protected int lambda2;
-    protected int lambda3;
+    /** Compteur total des messages envoyés par l'agent. */
+    protected int nbMessagesEnvoyes = 0;
+    
+    // Paramètres de simulation chargés depuis la config
+    protected int lambda1; // Temps min arrivée produit
+    protected int lambda2; // Temps max arrivée produit
+    protected int lambda3; // Temps moyen traitement
     protected int nbCompetencesTotal;
     protected int nbCompetencesActives;
     protected int nbCompetencesMaxProduit;
+    
+    /**
+     * Envoie un message ACL en incrémentant le compteur de statistiques.
+     * Cette méthode doit être utilisée à la place de super.send().
+     * * @param msg Le message ACLMessage à envoyer.
+     */
+	public void sendPerso(ACLMessage msg) {
+		this.nbMessagesEnvoyes++;
+		super.send(msg);
+	}
 
+    /**
+     * Charge les paramètres de simulation depuis "config/config.properties".
+     * Utilise des valeurs par défaut en cas d'erreur de lecture.
+     */
     protected void loadConfig() {
         try {
             FileInputStream input = new FileInputStream("config/config.properties");
@@ -32,7 +64,8 @@ public class BaseAgent extends Agent {
             this.nbCompetencesMaxProduit = Integer.parseInt(config.getProperty("nbCompetencesMaxProduit", "3"));
 
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            System.out.println("Erreur chargement config: " + e.getMessage());
+            // Valeurs par défaut
             this.lambda1 = 1000; 
             this.lambda2 = 5000; 
             this.lambda3 = 2000;
@@ -42,6 +75,10 @@ public class BaseAgent extends Agent {
         }
     }
 
+    /**
+     * Enregistre l'agent auprès du Directory Facilitator (pages jaunes).
+     * * @param serviceType Le type de service fourni (ex: "robots", "atelier").
+     */
     protected void registerDF(String serviceType) {
         DFAgentDescription dfd = new DFAgentDescription();
         dfd.setName(getAID());
@@ -57,11 +94,15 @@ public class BaseAgent extends Agent {
         }
     }
 
+    /**
+     * Méthode appelée lors de l'arrêt de l'agent.
+     * Affiche le nombre total de messages envoyés et se désinscrit du DF.
+     */
     @Override
     protected void takeDown() {
         try {
             DFService.deregister(this);
         } catch (FIPAException fe) {}
-        System.out.println(getLocalName() + " arrêt.");
-    }
+        System.out.println(getLocalName() + " arrêt. Messages envoyés : " + nbMessagesEnvoyes);
+	}
 }
