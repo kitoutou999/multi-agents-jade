@@ -19,7 +19,8 @@ import java.util.Properties;
  * </ul>
  * </p>
  *
- * @author Ton Prenom NOM
+ * * @author Tom DAVID
+ * * @author Titouan PASQUIER
  */
 public class BaseAgent extends Agent {
 

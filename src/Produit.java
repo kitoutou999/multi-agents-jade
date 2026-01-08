@@ -10,7 +10,8 @@ import java.util.Map;
  * </p>
  * Implémente Serializable pour pouvoir être envoyé dans des messages ACL.
  *
- * @author Ton Prenom NOM
+ * * @author Tom DAVID
+ * * @author Titouan PASQUIER
  */
 public class Produit implements Serializable {
     private static final long serialVersionUID = 1L;

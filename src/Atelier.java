@@ -16,7 +16,8 @@ import java.util.Random;
  * aléatoirement à un robot pour initier le processus.
  * Il collecte également les statistiques sur les produits finis (moyenne d'échecs).
  * </p>
- * * @author Ton Prenom NOM
+ * * @author Tom DAVID
+ * * @author Titouan PASQUIER
  */
 public class Atelier extends BaseAgent {
 

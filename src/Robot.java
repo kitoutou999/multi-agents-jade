@@ -24,7 +24,8 @@ import java.util.Map;
  * <li>La gestion des pannes et des échecs probabilistes.</li>
  * </ul>
  * </p>
- * * @author Ton Prenom NOM
+ * * @author Tom DAVID
+ * * @author Titouan PASQUIER
  */
 public class Robot extends BaseAgent {
 
