@@ -85,6 +85,24 @@ public class Atelier extends BaseAgent {
     }
 
     /**
+     * Méthode appelée lors de l'arrêt de l'agent.
+     * Affiche les statistiques de fin de simulation.
+     */
+    @Override
+    protected void takeDown() {
+        super.takeDown();
+        System.out.println("\n" + RED_BACKGROUND + " --- STATISTIQUES FINALES --- " + RESET);
+        if (nombreProduitsFinis > 0) {
+            double moyenne = sommeEchecs / nombreProduitsFinis;
+            System.out.println(nameColor + "Nombre de produits finis : " + nombreProduitsFinis);
+            System.out.println(nameColor + "Nombre moyen d'échecs de compétence : " + String.format("%.2f", moyenne));
+        } else {
+            System.out.println(nameColor + "Aucun produit n'a été terminé.");
+        }
+        System.out.println(RED_BACKGROUND + " ---------------------------- " + RESET + "\n");
+    }
+
+    /**
      * Transfère un produit nouvellement créé à un robot choisi au hasard.
      * Ce robot sera chargé de lancer la première enchère.
      * * @param p Le produit à injecter dans le système.

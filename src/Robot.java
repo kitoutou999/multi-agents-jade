@@ -356,7 +356,7 @@ public class Robot extends BaseAgent {
 							// Par défaut je suis le meilleur candidat
 							bestTime = monPropreTemps;
 							bestRobot = myAgent.getAID(); 
-							System.out.println(getLocalName() + ": Je candidate à ma propre enchère (Best temp =" + monPropreTemps + ")");
+							System.out.println(getLocalName() + ": Je candidate à ma propre enchère (Best temp =" + String.format("%.2f", bestTime) + ")");
 						}
 					}
 
@@ -422,7 +422,7 @@ public class Robot extends BaseAgent {
 				case 2: // Décision
 					// Cas 1: Je suis le meilleur (ou je suis le seul capable)
 					if (bestRobot != null && bestRobot.equals(myAgent.getAID())) {
-						System.out.println(GREEN + getLocalName() + ": Je remporte l'enchère pour " + produit.getId() + " (Best temp: " + bestTime + ")" + RESET);
+						System.out.println(GREEN + getLocalName() + ": Je remporte l'enchère pour " + produit.getId() + " (Best temp: " + String.format("%.2f", bestTime) + ")" + RESET);
 						fileAttente.add(produit);
 					} 
 					// Cas 2: Un autre robot est meilleur
@@ -433,7 +433,7 @@ public class Robot extends BaseAgent {
 							order.setContentObject(produit);
 							order.setConversationId("enchere-attribution");
 							sendPerso(order); // Utilisation de sendPerso
-							System.out.println(CYAN + getLocalName() + ": Délégation de " + produit.getId() + " à " + bestRobot.getLocalName() + " (Best temp: " + bestTime + ")" + RESET);
+							System.out.println(CYAN + getLocalName() + ": Délégation de " + produit.getId() + " à " + bestRobot.getLocalName() + " (Best temp: " + String.format("%.2f", bestTime) + ")" + RESET);
 						} catch (IOException e) { e.printStackTrace(); }
 					} 
 					// Cas 3: Personne ne sait faire (y compris moi)
