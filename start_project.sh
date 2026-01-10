@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Configuration
+# ===========================================
 NB_ROBOTS=3
 NB_COMP_TOTAL=5
 NB_COMP_ACTIVES=3
@@ -7,8 +9,15 @@ LAMBDA1=2000
 LAMBDA2=5000
 LAMBDA3=1000
 NB_COMP_MAX_PROD=3
+# ===========================================
 
-CONFIG_FILE="config/config.properties"
+
+
+
+RUN_DIR="jade_runtime"
+mkdir -p "$RUN_DIR/config"
+
+CONFIG_FILE="$RUN_DIR/config/config.properties"
 
 cat > "$CONFIG_FILE" <<EOL
 lambda1=$LAMBDA1
@@ -28,4 +37,5 @@ do
 done
 
 
-java -cp "bin:lib/jade.jar" jade.Boot -agents "$AGENTS"
+cd "$RUN_DIR"
+java -cp "../bin:../lib/jade.jar" jade.Boot -agents "$AGENTS"
